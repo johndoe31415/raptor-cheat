@@ -1,1 +1,4 @@
 .*.swp
+decrypted.bin
+*.bak
+__pycache__

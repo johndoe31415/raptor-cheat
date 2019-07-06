@@ -20,4 +20,34 @@
 #
 #	Johannes Bauer <JohannesBauer@gmx.de>
 
+import sys
+import shutil
+import struct
+from FriendlyArgumentParser import FriendlyArgumentParser
+from RaptorCrypto import RaptorCrypto
+
+parser = FriendlyArgumentParser()
+parser.add_argument("savegame", metavar = "savegame", type = str, help = "Savegame file to edit.")
+args = parser.parse_args(sys.argv[1:])
+
+with open(args.savegame, "rb") as f:
+	original_savegame = f.read()
+
+savegame = bytearray(RaptorCrypto.decrypt(original_savegame))
+#with open("decrypted.bin", "wb") as f:
+#	f.write(savegame)
+
+# Set money to a bunch
+money_offset = 0x24
+patch = struct.pack("<L", 100000000)
+for (offset, value) in enumerate(patch, money_offset):
+	savegame[offset] = value
+
+# Create a copy
+with open(args.savegame + ".bak", "wb") as f:
+	f.write(original_savegame)
+
+# Overwrite savegame
+with open(args.savegame, "wb") as f:
+	f.write(RaptorCrypto.encrypt(savegame))
 
